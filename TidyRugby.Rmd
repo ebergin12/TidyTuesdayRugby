@@ -1,0 +1,54 @@
+---
+title: "Tidy Tuesday Rugby"
+author: "Emily Bergin"
+date: "6/20/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(lubridate)
+library(ggthemes)
+```
+
+
+```{r}
+# Get the Data
+
+tuesdata <- tidytuesdayR::tt_load(2022, week = 21)
+
+sevens <- tuesdata$sevens
+fifteens <- tuesdata$fifteens
+```
+
+```{r}
+sevens %>%
+  group_by(team_1) %>%
+  mutate(wins = sum(winner == team_1),
+         losses = sum(winner == team_2),
+         win_percent = (wins/(wins + losses)*100), 
+         tot_games = wins + losses) %>%
+  select(team_1, wins, losses, win_percent, tot_games) %>%
+  rename(team = team_1) %>%
+  slice(1) %>%
+  filter(win_percent > 90 & tot_games >= 50) %>%
+  ggplot(aes(y = reorder(team, wins), x = wins, fill = win_percent)) + 
+  geom_col() + 
+  labs(title = "Best Rugby Teams from 1997 - Present",
+       x = "Number of Wins",
+       y = NULL,
+       fill = "Win Percent") +
+  theme_economist() + 
+  theme(panel.grid.major = element_line(colour = NA, linetype = "blank"), 
+        legend.position = "right", 
+        plot.title = element_text(hjust = -15, vjust = 2), 
+        axis.text.x = element_text(vjust = 5), 
+        axis.title = element_text(face = "bold"), 
+        legend.text = element_text(size = 10), 
+        legend.title = element_text(size = 12, face = "bold"))
+```
+
